@@ -1,0 +1,20 @@
+# 构建产物
+*.rpm
+*.src.rpm
+*.deb
+*.tar.*
+stage/
+BUILD/
+BUILDROOT/
+RPMS/
+SRPMS/
+
+# 日志与本机状态
+*.log
+*.sqlite
+*.sqlite3
+
+# 编辑器
+.vscode/
+.idea/
+*~
