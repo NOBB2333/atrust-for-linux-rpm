@@ -8,6 +8,10 @@ BUILD/
 BUILDROOT/
 RPMS/
 SRPMS/
+.cache/
+.build/
+dist/
+__pycache__/
 
 # 日志与本机状态
 *.log

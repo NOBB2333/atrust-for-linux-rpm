@@ -22,6 +22,8 @@ SOFTWARE.
 
 ---
 
-Note: This repository contains only packaging scripts, patches and
-documentation. It does not contain or redistribute any Sangfor binaries.
+Note: The Git-tracked source tree contains only packaging scripts, patches
+and documentation. Binary release assets are repackaged Sangfor clients;
+their use and redistribution remain subject to Sangfor's license and are
+not covered by the MIT license above.
 "aTrust" and "Sangfor" are trademarks of their respective owner.

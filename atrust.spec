@@ -9,18 +9,21 @@
 #   cp patches/history-addr-fedora.js ~/rpmbuild/SOURCES/
 #   rpmbuild -bb atrust.spec
 #
-# 本文件不含任何厂商二进制；Version 请与你自己准备的 deb 保持一致。
+# 推荐入口：./scripts/build-rpm.sh（自动下载、校验并解包官方 deb）。
+# 本文件不含任何厂商二进制；Version 请与 sources.env 保持一致。
 
 %global __os_install_post %{nil}
 %global debug_package %{nil}
 
 Name:           atrust
 Version:        2.5.16.50
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Sangfor aTrust SDP client (repacked from official Ubuntu deb)
 License:        Proprietary
 URL:            https://www.sangfor.com.cn
 AutoReqProv:    no
+BuildArch:      x86_64
+BuildRequires:  systemd-rpm-macros
 Requires:       glibc
 Requires:       libstdc++
 Requires:       systemd
@@ -46,12 +49,23 @@ Requires:       libXtst
 Requires:       libxshmfence
 Requires:       libxcb
 Requires:       libnotify
+# Qt/XCB and Electron also need these on a minimal Fedora installation.
+Requires:       libGL.so.1()(64bit)
+Requires:       libX11-xcb.so.1()(64bit)
+Requires:       libXss.so.1()(64bit)
+Requires:       libSM.so.6()(64bit)
+Requires:       libICE.so.6()(64bit)
+Requires:       libxcb-render-util.so.0()(64bit)
+Requires:       libxcb-image.so.0()(64bit)
+Requires:       libxcb-icccm.so.4()(64bit)
+Requires:       libxcb-keysyms.so.1()(64bit)
+Requires:       libxkbcommon-x11.so.0()(64bit)
 
 %description
 Sangfor aTrust (SDP / zero trust access client), Linux x86_64 build %{version}.
 This RPM is repacked from the official Sangfor Ubuntu amd64 deb package and
 installs to /usr/share/sangfor/aTrust with the bundled aTrustDaemon.service.
-No vendor binaries are distributed with this spec; you must supply your own deb.
+The build script downloads and verifies the official deb pinned in sources.env.
 
 %prep
 
@@ -142,3 +156,9 @@ fi
 /usr/lib/systemd/user/aTrustShell.service
 /usr/lib/systemd/user/aTrustTray.service
 /opt/apps
+
+%changelog
+* Tue Oct 27 2026 NOBB2333 - 2.5.16.50-5
+- Pin and verify the official Ubuntu amd64 source for local and Release builds.
+- Add x86_64 build metadata and require systemd RPM macros.
+- Declare missing Qt/XCB and Electron shared-library dependencies.

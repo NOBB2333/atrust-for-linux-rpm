@@ -1,0 +1,61 @@
+name: Build Release RPM
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.release.id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: registry.fedoraproject.org/fedora:44
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install build tools
+        run: >-
+          dnf install -y --setopt=install_weak_deps=False
+          rpm-build systemd-rpm-macros binutils tar gzip xz
+          curl python3 git gh ShellCheck
+
+      - name: Checkout release commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Check build scripts
+        run: |
+          shellcheck -x scripts/build-rpm.sh tests/smoke-installed.sh
+          python3 -m unittest discover -s tests -v
+
+      - name: Build pinned official client
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: ./scripts/build-rpm.sh
+
+      - name: Verify RPM and checksums
+        run: |
+          rpm --checksig dist/*.rpm
+          cd dist
+          sha256sum --check SHA256SUMS
+
+      - name: Install RPM and check runtime dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False ./dist/*.rpm
+          ./tests/smoke-installed.sh
+
+      - name: Attach packages to published Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: >-
+          gh release upload "$RELEASE_TAG" dist/*.rpm dist/SHA256SUMS
+          --repo "$GITHUB_REPOSITORY" --clobber
